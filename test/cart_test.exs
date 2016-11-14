@@ -2,7 +2,7 @@ defmodule CartTest do
   use ExUnit.Case
   doctest Cart
 
-  @basket_number 100
+  @basket_number 50
 
   setup_all do
     case Cart.start([],[]) do
@@ -62,11 +62,23 @@ defmodule CartTest do
     Agent.stop(pid)
   end
 
-  test "add product to baskets and the purchase", %{pids: pids} do 
+  test "add product to baskets and the purchase", %{pids: pids} do
+    product_id = 1;
+
     pids 
       |> Enum.each(fn(basket_pid) ->
-        Basket.add_product(basket_pid, :os.timestamp)
+        Basket.add_product(basket_pid, product_id)
       end) 
+
+    pids 
+      |> Enum.each(fn(basket_pid) ->
+        Basket.delete_product(basket_pid, product_id)
+      end)
+
+    pids 
+      |> Enum.each(fn(basket_pid) ->
+        Basket.add_product(basket_pid, product_id)
+      end)
   
     pids 
       |> Enum.filter(fn(basket_pid) ->
@@ -77,5 +89,13 @@ defmodule CartTest do
       |> Enum.each(fn(basket_pid) ->
         Basket.purchase(basket_pid)
       end)
+  end
+
+  test "handle info" do
+    user_id = 1
+    basket_id = Basket.Manager.create_basket_or_return_basket_id(Basket.Manager, user_id)
+    basket_pid = Basket.Manager.get_basket(Basket.Manager, basket_id)
+    basket_ref = Process.monitor(basket_pid)
+    Basket.Manager.handle_info({:DOWN, basket_ref, :process, basket_pid, :normal}, {%{user_id => basket_id}, %{basket_id => basket_pid}})
   end
 end
