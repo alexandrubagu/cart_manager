@@ -37,7 +37,7 @@ stream = 1..200_000 |> Stream.each(fn(number) ->
         do: IO.puts "#{number} done in #{seconds} seconds"
         
         
-    basket_id = Basket.Manager.create_basket_or_return_basket_id(Basket.Manager, user_id)
+    basket_id = Basket.Manager.create_basket_or_return_basket_id(Basket.Manager, number)
     basket_pid = Basket.Manager.get_basket(Basket.Manager, basket_id)
     Basket.add_product(basket_pid, number)
 end)
